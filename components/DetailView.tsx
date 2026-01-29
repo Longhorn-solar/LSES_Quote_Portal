@@ -16,6 +16,9 @@ const DetailView: React.FC<DetailViewProps> = ({ project, updateBid }) => {
   const bid = project.bids[selectedService];
   const info = SERVICES_DB[selectedService];
 
+  const selectedBids = (Object.values(project.bids) as BidItem[]).filter(b => b.selected);
+  const subtotal = selectedBids.reduce((sum, b) => sum + b.estCost, 0);
+
   const handleAiClick = async () => {
     if (!bid.notes.trim()) {
       alert("Please enter some site conditions or notes first.");
@@ -24,10 +27,7 @@ const DetailView: React.FC<DetailViewProps> = ({ project, updateBid }) => {
     
     setIsAiLoading(true);
     
-    // Fix: Explicitly cast Object.values to BidItem[] to resolve unknown type errors on 'selected' and 'serviceName'
-    const otherSelected = (Object.values(project.bids) as BidItem[])
-      .filter(b => b.selected)
-      .map(b => b.serviceName);
+    const otherSelected = selectedBids.map(b => b.serviceName);
 
     const recs = await getAiRecommendations(selectedService, bid.notes, otherSelected);
     updateBid(selectedService, { aiRecommendations: recs });
@@ -41,7 +41,7 @@ const DetailView: React.FC<DetailViewProps> = ({ project, updateBid }) => {
   };
 
   return (
-    <div className="space-y-8 animate-fadeIn">
+    <div className="space-y-8 animate-fadeIn pb-20">
       {/* Header Selector */}
       <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
         <label className="block text-base font-bold text-[#002a4d] mb-3">Select Item to Configure</label>
@@ -133,8 +133,9 @@ const DetailView: React.FC<DetailViewProps> = ({ project, updateBid }) => {
           </div>
         </div>
 
-        {/* AI Analysis & Considerations */}
+        {/* AI Analysis, Considerations & Bid Summary Column */}
         <div className="space-y-8">
+          {/* Site Considerations */}
           <div className="bg-white p-10 rounded-2xl shadow-sm border border-slate-200">
             <h3 className="text-2xl font-bold text-[#002a4d] flex items-center gap-3 mb-6">
               <i className="fa-solid fa-microchip text-[#f39200]"></i>
@@ -169,6 +170,7 @@ const DetailView: React.FC<DetailViewProps> = ({ project, updateBid }) => {
             </button>
           </div>
 
+          {/* AI Recommendations (Conditionally rendered) */}
           {bid.aiRecommendations && (
             <div className="bg-[#002a4d] text-white p-10 rounded-2xl shadow-2xl border border-slate-800 animate-slideUp">
               <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
@@ -188,6 +190,62 @@ const DetailView: React.FC<DetailViewProps> = ({ project, updateBid }) => {
               </div>
             </div>
           )}
+
+          {/* Services in this Bid Summary (Now a half-column section) */}
+          <div className="bg-white p-10 rounded-2xl shadow-sm border border-slate-200">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-4 border-b border-slate-100 gap-4">
+              <h3 className="text-xl font-bold text-[#002a4d] flex items-center gap-3">
+                <i className="fa-solid fa-receipt text-[#0062ab]"></i>
+                Services in this Bid
+              </h3>
+              <div className="text-left sm:text-right">
+                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Bid Subtotal</span>
+                 <span className="text-xl font-black text-[#0062ab]">
+                   ${new Intl.NumberFormat(undefined, { minimumFractionDigits: 2 }).format(subtotal)}
+                 </span>
+              </div>
+            </div>
+
+            {selectedBids.length > 0 ? (
+              <div className="space-y-3">
+                {selectedBids.map((b) => (
+                  <div 
+                    key={b.serviceName}
+                    className={`flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer ${
+                      selectedService === b.serviceName 
+                        ? 'bg-orange-50 border-[#f39200] ring-1 ring-[#f39200]' 
+                        : 'bg-slate-50 border-slate-100 hover:border-[#0062ab]'
+                    }`}
+                    onClick={() => setSelectedService(b.serviceName)}
+                  >
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm transition-colors ${
+                        selectedService === b.serviceName ? 'bg-[#f39200] text-white' : 'bg-[#0062ab] text-white'
+                      }`}>
+                        <i className="fa-solid fa-check text-[9px]"></i>
+                      </div>
+                      <span className={`text-sm font-bold truncate ${
+                        selectedService === b.serviceName ? 'text-[#002a4d]' : 'text-slate-700'
+                      }`}>
+                        {b.serviceName}
+                      </span>
+                    </div>
+                    <div className="text-right pl-3">
+                       <span className="text-sm font-black text-[#0062ab]">
+                         ${new Intl.NumberFormat().format(b.estCost)}
+                       </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-10 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+                <i className="fa-solid fa-cart-plus text-slate-300 text-3xl mb-3"></i>
+                <p className="text-slate-400 font-bold text-sm">No services added to bid.</p>
+                <p className="text-slate-400 text-xs mt-1">Check "Add to Bid" on a service.</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

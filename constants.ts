@@ -1,5 +1,4 @@
-
-import { ServicesDB, ProjectState, ProjectStatus, BidItem } from './types';
+import { ServicesDB, ProjectState, ProjectStatus, BidItem, SiteAddress } from './types';
 
 export const SERVICES_DB: ServicesDB = {
   "Energy Audit": {
@@ -54,9 +53,10 @@ export const SERVICES_DB: ServicesDB = {
     "desc": "Front or rear door replacement.",
     "details": ["Count", "Door Type (Entry/Patio)", "Material (Wood/Steel/Fiberglass)", "Jamb Size"]
   },
+  // Fixed malformed object for "Water Heater"
   "Water Heater": {
-    "desc": "Heat pump or tankless water heater.",
-    "details": ["Fuel Source (Gas/Electric)", "Type (Tank/Tankless)", "Capacity (Gallons/GPM)", "Location"]
+    "desc": "Traditional or tankless hot water solutions.",
+    "details": ["Fuel source (Gas/Electric)", "Type (Tank/Tankless)", "Capacity (Gallons/GPM)", "Location"]
   },
   "HVAC/Heat Pump": {
     "desc": "Heating and cooling system.",
@@ -80,6 +80,14 @@ export const SERVICES_DB: ServicesDB = {
   }
 };
 
+export const DEFAULT_ADDRESS: SiteAddress = {
+  address1: '',
+  address2: '',
+  city: '',
+  state: 'TX',
+  zip: ''
+};
+
 const createEmptyBids = (): Record<string, BidItem> => {
   const bids: Record<string, BidItem> = {};
   Object.keys(SERVICES_DB).forEach(name => {
@@ -101,6 +109,14 @@ export const MOCK_PROJECTS: ProjectState[] = [
     clientName: 'John Smith',
     projectDate: '2023-11-01',
     status: ProjectStatus.QUOTING,
+    phoneNumber: '512-555-0123',
+    siteAddress: {
+      address1: '123 Longhorn Way',
+      address2: '',
+      city: 'Austin',
+      state: 'TX',
+      zip: '78701'
+    },
     bids: {
         ...createEmptyBids(),
         "Solar": { serviceName: "Solar", selected: true, estCost: 15000, details: {}, notes: '', aiRecommendations: '' },
@@ -112,27 +128,18 @@ export const MOCK_PROJECTS: ProjectState[] = [
     clientName: 'Sarah Jenkins',
     projectDate: '2023-10-25',
     status: ProjectStatus.PROPOSED,
+    phoneNumber: '512-555-4567',
+    siteAddress: {
+      address1: '456 Solar Circle',
+      address2: 'Apt 2B',
+      city: 'Round Rock',
+      state: 'TX',
+      zip: '78664'
+    },
     bids: {
         ...createEmptyBids(),
         "HVAC/Heat Pump": { serviceName: "HVAC/Heat Pump", selected: true, estCost: 8500, details: {}, notes: '', aiRecommendations: '' },
         "Insulation": { serviceName: "Insulation", selected: true, estCost: 1200, details: {}, notes: '', aiRecommendations: '' }
     }
-  },
-  {
-    id: '3',
-    clientName: 'Austin Community Center',
-    projectDate: '2023-09-12',
-    status: ProjectStatus.IN_PROGRESS,
-    bids: {
-        ...createEmptyBids(),
-        "Solar": { serviceName: "Solar", selected: true, estCost: 45000, details: {}, notes: '', aiRecommendations: '' }
-    }
-  },
-  {
-    id: '4',
-    clientName: 'Michael Brown',
-    projectDate: '2023-11-05',
-    status: ProjectStatus.QUOTING,
-    bids: createEmptyBids()
   }
 ];

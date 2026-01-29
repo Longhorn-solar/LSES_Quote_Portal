@@ -12,6 +12,14 @@ export enum ProjectStatus {
   IN_PROGRESS = 'IN_PROGRESS'
 }
 
+export interface SiteAddress {
+  address1: string;
+  address2: string;
+  city: string;
+  state: string;
+  zip: string;
+}
+
 export interface BidItem {
   serviceName: string;
   selected: boolean;
@@ -27,6 +35,8 @@ export interface ProjectState {
   clientName: string;
   projectDate: string;
   status: ProjectStatus;
+  siteAddress: SiteAddress;
+  phoneNumber: string;
 }
 
 export enum ViewMode {

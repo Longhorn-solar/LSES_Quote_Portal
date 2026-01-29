@@ -32,6 +32,10 @@ const DashboardView: React.FC<DashboardViewProps> = ({ projects, onSelectProject
     return Object.values(p.bids).reduce((sum, bid) => sum + (bid.selected ? bid.estCost : 0), 0);
   };
 
+  const countSelectedServices = (p: ProjectState) => {
+    return Object.values(p.bids).filter(bid => bid.selected).length;
+  };
+
   return (
     <div className="animate-fadeIn max-w-7xl mx-auto pb-12">
       <div className="mb-12">
@@ -116,6 +120,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ projects, onSelectProject
               <th className="px-8 py-5 text-left text-xs font-black text-slate-400 uppercase tracking-widest">Client Name</th>
               <th className="px-8 py-5 text-left text-xs font-black text-slate-400 uppercase tracking-widest">Date Created</th>
               <th className="px-8 py-5 text-left text-xs font-black text-slate-400 uppercase tracking-widest">Status</th>
+              <th className="px-8 py-5 text-center text-xs font-black text-slate-400 uppercase tracking-widest"># of Services</th>
               <th className="px-8 py-5 text-right text-xs font-black text-slate-400 uppercase tracking-widest">Bid Value</th>
               <th className="px-8 py-5 text-right text-xs font-black text-slate-400 uppercase tracking-widest">Actions</th>
             </tr>
@@ -123,14 +128,24 @@ const DashboardView: React.FC<DashboardViewProps> = ({ projects, onSelectProject
           <tbody className="divide-y divide-slate-100">
             {filteredProjects.length > 0 ? filteredProjects.map((p) => (
               <tr key={p.id} className="hover:bg-slate-50 transition-colors group">
-                <td className="px-8 py-6 whitespace-nowrap">
-                  <span className="text-lg font-bold text-[#002a4d] group-hover:text-[#0062ab] transition-colors">{p.clientName || 'Unnamed Client'}</span>
+                <td 
+                  className="px-8 py-6 whitespace-nowrap cursor-pointer"
+                  onClick={() => onSelectProject(p.id)}
+                >
+                  <span className="text-lg font-bold text-[#002a4d] group-hover:text-[#0062ab] transition-colors">
+                    {p.clientName || 'Unnamed Client'}
+                  </span>
                 </td>
                 <td className="px-8 py-6 whitespace-nowrap text-slate-500 font-medium">
                   {new Date(p.projectDate).toLocaleDateString()}
                 </td>
                 <td className="px-8 py-6 whitespace-nowrap">
                   <StatusBadge status={p.status} />
+                </td>
+                <td className="px-8 py-6 whitespace-nowrap text-center">
+                  <span className="inline-flex items-center justify-center bg-slate-100 text-[#002a4d] font-black w-8 h-8 rounded-full text-sm">
+                    {countSelectedServices(p)}
+                  </span>
                 </td>
                 <td className="px-8 py-6 whitespace-nowrap text-right">
                   <span className="text-lg font-black text-[#0062ab]">
@@ -148,7 +163,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ projects, onSelectProject
               </tr>
             )) : (
               <tr>
-                <td colSpan={5} className="px-8 py-20 text-center">
+                <td colSpan={6} className="px-8 py-20 text-center">
                   <div className="flex flex-col items-center">
                     <i className="fa-solid fa-folder-open text-slate-200 text-6xl mb-4"></i>
                     <p className="text-slate-400 text-lg font-medium">No projects found matching your criteria.</p>
