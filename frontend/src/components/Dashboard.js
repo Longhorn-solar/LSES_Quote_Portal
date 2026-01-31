@@ -995,7 +995,7 @@ function Dashboard({ user, setUser }) {
             <div className="bg-white p-4 rounded-xl shadow-inner mb-6 flex items-center justify-center min-h-[140px] overflow-hidden">
               {!logoError ? (
                 <img
-                  src="https://longhornsolar.com/wp-content/uploads/2021/04/Longhorn-Solar-Logo-Vertical-1.png"
+                  src="https://customer-assets.emergentagent.com/job_9fbf2265-5557-4615-8f17-99f8d47f3a31/artifacts/l593hr9h_LSES_logo.png"
                   alt="Longhorn Solar"
                   className="max-w-full max-h-32 object-contain"
                   referrerPolicy="no-referrer"

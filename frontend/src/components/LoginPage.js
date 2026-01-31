@@ -44,7 +44,7 @@ function LoginPage() {
           <div className="bg-slate-50 p-8 rounded-2xl mb-8 w-full flex justify-center shadow-inner min-h-[220px] items-center">
             {!logoError ? (
               <img
-                src="https://longhornsolar.com/wp-content/uploads/2021/04/Longhorn-Solar-Logo-Vertical-1.png"
+                src="https://customer-assets.emergentagent.com/job_9fbf2265-5557-4615-8f17-99f8d47f3a31/artifacts/l593hr9h_LSES_logo.png"
                 alt="Longhorn Solar"
                 className="h-40 object-contain"
                 referrerPolicy="no-referrer"
