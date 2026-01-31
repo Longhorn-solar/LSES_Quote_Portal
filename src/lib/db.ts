@@ -209,7 +209,7 @@ export async function updateProject(
     RETURNING *
   `;
   
-  return result[0] as Project || null;
+  return (result as any)[0] as Project || null;
 }
 
 export async function deleteProject(projectId: string, userId: string): Promise<boolean> {
