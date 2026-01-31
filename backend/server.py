@@ -35,7 +35,7 @@ EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY")
 # Email whitelist for authorization
 ALLOWED_EMAILS = [
     "richard.balius@gmail.com",
-    "richard@rbvital.com"
+    "richard@rbxvital.com"
 ]
 ALLOWED_DOMAINS = ["longhornsolar.com"]
 
