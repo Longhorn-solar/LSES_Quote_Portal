@@ -1,15 +1,22 @@
-import { createPool, VercelPool } from '@vercel/postgres';
+import { createClient, VercelClient } from '@vercel/postgres';
 
-// Lazy pool initialization - only connects when first used
-let pool: VercelPool | null = null;
+// Lazy client initialization - only connects when first used
+let client: VercelClient | null = null;
 
-function getPool(): VercelPool {
-  if (!pool) {
-    pool = createPool({
+function getClient(): VercelClient {
+  if (!client) {
+    client = createClient({
       connectionString: process.env.POSTGRES_URL
     });
   }
-  return pool;
+  return client;
+}
+
+// Helper to run SQL queries
+async function sql(strings: TemplateStringsArray, ...values: any[]) {
+  const db = getClient();
+  await db.connect();
+  return db.sql(strings, ...values);
 }
 
 // Types
