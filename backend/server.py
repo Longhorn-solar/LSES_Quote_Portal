@@ -386,7 +386,7 @@ async def get_projects(user: User = Depends(get_current_user)):
     return projects
 
 
-@app.post("/api/projects")
+@app.post("/api/projects", status_code=201)
 async def create_project(
     project_data: ProjectCreate,
     user: User = Depends(get_current_user)
