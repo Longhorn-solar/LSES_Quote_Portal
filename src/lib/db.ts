@@ -1,9 +1,16 @@
-import { createPool } from '@vercel/postgres';
+import { createPool, VercelPool } from '@vercel/postgres';
 
-// Create a connection pool
-const pool = createPool({
-  connectionString: process.env.POSTGRES_URL
-});
+// Lazy pool initialization - only connects when first used
+let pool: VercelPool | null = null;
+
+function getPool(): VercelPool {
+  if (!pool) {
+    pool = createPool({
+      connectionString: process.env.POSTGRES_URL
+    });
+  }
+  return pool;
+}
 
 // Types
 export interface User {
