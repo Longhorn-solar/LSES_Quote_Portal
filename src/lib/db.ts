@@ -1,4 +1,9 @@
-import { sql } from '@vercel/postgres';
+import { createPool } from '@vercel/postgres';
+
+// Create a connection pool
+const pool = createPool({
+  connectionString: process.env.POSTGRES_URL
+});
 
 // Types
 export interface User {
