@@ -56,7 +56,7 @@ export interface Project {
 export async function initializeDatabase() {
   try {
     // Create users table
-    await sql`
+    await pool.sql`
       CREATE TABLE IF NOT EXISTS users (
         user_id VARCHAR(50) PRIMARY KEY,
         email VARCHAR(255) UNIQUE NOT NULL,
@@ -67,7 +67,7 @@ export async function initializeDatabase() {
     `;
 
     // Create sessions table
-    await sql`
+    await pool.sql`
       CREATE TABLE IF NOT EXISTS user_sessions (
         id SERIAL PRIMARY KEY,
         user_id VARCHAR(50) REFERENCES users(user_id),
@@ -78,7 +78,7 @@ export async function initializeDatabase() {
     `;
 
     // Create projects table with JSONB for flexible data
-    await sql`
+    await pool.sql`
       CREATE TABLE IF NOT EXISTS projects (
         project_id VARCHAR(50) PRIMARY KEY,
         user_id VARCHAR(50) REFERENCES users(user_id),
@@ -93,15 +93,15 @@ export async function initializeDatabase() {
       )
     `;
 
-    // Create index for faster queries
-    await sql`CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id)`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_sessions_token ON user_sessions(session_token)`;
+    // Create indexes
+    await pool.sql`CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id)`;
+    await pool.sql`CREATE INDEX IF NOT EXISTS idx_sessions_token ON user_sessions(session_token)`;
 
     console.log('Database initialized successfully');
     return { success: true };
   } catch (error) {
     console.error('Database initialization error:', error);
-    return { success: false, error };
+    return { success: false, error: String(error) };
   }
 }
 
