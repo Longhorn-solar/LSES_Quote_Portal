@@ -1,20 +1,83 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Longhorn Solar - Energy Efficiency Estimator
 
-# Run and deploy your AI Studio app
+A professional energy efficiency project estimator for Longhorn Solar, built with Next.js and Vercel Postgres.
 
-This contains everything you need to run your app locally.
+## Tech Stack
 
-View your app in AI Studio: https://ai.studio/apps/drive/1-8UUu5w7zlqSCOekee6kSOGlPVVsUF65
+- **Framework**: Next.js 14 (App Router)
+- **Database**: Vercel Postgres
+- **Auth**: Emergent Google OAuth
+- **AI**: Emergent LLM Key (Gemini)
+- **Styling**: Tailwind CSS
 
-## Run Locally
+## Vercel Deployment Setup
 
-**Prerequisites:**  Node.js
+### 1. Push to GitHub
+Push this repository to GitHub.
 
+### 2. Import to Vercel
+- Go to [vercel.com](https://vercel.com)
+- Click "New Project" and import your GitHub repo
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### 3. Create Vercel Postgres Database
+- In your Vercel project, go to **Storage** tab
+- Click **Create Database** → **Postgres**
+- Name it `longhorn-solar-db`
+- Vercel will auto-populate the environment variables
+
+### 4. Add Environment Variables
+In Vercel project settings → Environment Variables, add:
+
+```
+EMERGENT_LLM_KEY=sk-emergent-cC12c4014A4A880B25
+```
+
+(The Postgres variables are added automatically when you create the database)
+
+### 5. Initialize Database Tables
+After first deployment, call this endpoint once to create tables:
+```
+POST https://your-app.vercel.app/api/db/setup
+```
+
+### 6. Configure Auth Redirect (if needed)
+The app uses `window.location.origin` for OAuth redirects, so it should work automatically on any domain.
+
+## Authorized Users
+
+Only these emails can access the app:
+- Any `@longhornsolar.com` email
+- `richard.balius@gmail.com`
+- `richard@rbxvital.com`
+
+To add more emails, edit `src/lib/constants.ts`.
+
+## Local Development
+
+```bash
+# Install dependencies
+yarn install
+
+# Run dev server
+yarn dev
+```
+
+For local development, the app uses mock database by default. To use real Vercel Postgres locally:
+1. Install Vercel CLI: `npm i -g vercel`
+2. Link project: `vercel link`
+3. Pull env vars: `vercel env pull .env.local`
+4. Run: `yarn dev`
+
+## Features
+
+- ✅ Google Auth with email whitelist
+- ✅ Projects Dashboard with search/filter
+- ✅ 19 energy services configuration
+- ✅ AI-powered recommendations
+- ✅ NetSuite CSV export
+- ✅ Vercel Postgres persistence
+
+## TODO
+
+- [ ] Migrate AI to customer's own Gemini API key
+- [ ] Add Settings page for API key configuration
