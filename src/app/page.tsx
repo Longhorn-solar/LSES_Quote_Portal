@@ -34,9 +34,10 @@ export default function Home() {
             // Clear the hash from URL
             window.history.replaceState(null, '', window.location.pathname);
           })
-          .catch(err => {
+          .catch(async (err) => {
             console.error('Auth error:', err);
-            alert('Access denied. Your email is not authorized.');
+            // Show the actual error message from backend
+            alert(err.message || 'Access denied. Your email is not authorized.');
           })
           .finally(() => {
             setAuthProcessing(false);
