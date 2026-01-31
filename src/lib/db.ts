@@ -112,12 +112,12 @@ export async function initializeDatabase() {
 // User functions
 export async function findUserByEmail(email: string): Promise<User | null> {
   const result = await getSql()`SELECT * FROM users WHERE email = ${email}`;
-  return result[0] as User || null;
+  return (result as any)[0] as User || null;
 }
 
 export async function findUserById(userId: string): Promise<User | null> {
   const result = await getSql()`SELECT * FROM users WHERE user_id = ${userId}`;
-  return result[0] as User || null;
+  return (result as any)[0] as User || null;
 }
 
 export async function createUser(user: Omit<User, 'created_at'>): Promise<User> {
@@ -127,7 +127,7 @@ export async function createUser(user: Omit<User, 'created_at'>): Promise<User> 
     ON CONFLICT (email) DO UPDATE SET name = ${user.name}, picture = ${user.picture}
     RETURNING *
   `;
-  return result[0] as User;
+  return (result as any)[0] as User;
 }
 
 // Session functions
