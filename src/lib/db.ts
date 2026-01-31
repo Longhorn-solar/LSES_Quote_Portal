@@ -1,10 +1,18 @@
-import { neon } from '@neondatabase/serverless';
+import { neon, NeonQueryFunction } from '@neondatabase/serverless';
 
-// Get connection string - prefer pooled URL
-const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL || '';
+// Lazy initialization - only connect when needed
+let sqlClient: NeonQueryFunction<boolean, boolean> | null = null;
 
-// Create Neon client (works with both pooled and direct connections)
-const sql = neon(connectionString);
+function getSql() {
+  if (!sqlClient) {
+    const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL || '';
+    if (!connectionString) {
+      throw new Error('No database connection string found');
+    }
+    sqlClient = neon(connectionString);
+  }
+  return sqlClient;
+}
 
 // Types
 export interface User {
