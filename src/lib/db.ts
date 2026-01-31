@@ -143,7 +143,7 @@ export async function findSessionByToken(token: string): Promise<UserSession | n
     SELECT * FROM user_sessions 
     WHERE session_token = ${token} AND expires_at > NOW()
   `;
-  return result[0] as UserSession || null;
+  return (result as any)[0] as UserSession || null;
 }
 
 export async function deleteSession(token: string): Promise<void> {
