@@ -2,6 +2,8 @@
 
 A professional energy efficiency project estimator for Longhorn Solar, built with Next.js and Vercel Postgres.
 
+> **Version 2.5.1** - Updated Jan 31, 2026
+
 ## Tech Stack
 
 - **Framework**: Next.js 14 (App Router)
