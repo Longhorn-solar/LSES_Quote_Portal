@@ -155,14 +155,14 @@ export async function getProjectsByUser(userId: string): Promise<Project[]> {
   const result = await getSql()`
     SELECT * FROM projects WHERE user_id = ${userId} ORDER BY created_at DESC
   `;
-  return result as Project[];
+  return result as unknown as Project[];
 }
 
 export async function getProjectById(projectId: string, userId: string): Promise<Project | null> {
   const result = await getSql()`
     SELECT * FROM projects WHERE project_id = ${projectId} AND user_id = ${userId}
   `;
-  return result[0] as Project || null;
+  return (result as any)[0] as Project || null;
 }
 
 export async function createProject(project: Omit<Project, 'created_at' | 'updated_at'>): Promise<Project> {
@@ -180,7 +180,7 @@ export async function createProject(project: Omit<Project, 'created_at' | 'updat
     )
     RETURNING *
   `;
-  return result[0] as Project;
+  return (result as any)[0] as Project;
 }
 
 export async function updateProject(
