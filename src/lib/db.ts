@@ -107,17 +107,17 @@ export async function initializeDatabase() {
 
 // User functions
 export async function findUserByEmail(email: string): Promise<User | null> {
-  const result = await sql`SELECT * FROM users WHERE email = ${email}`;
+  const result = await pool.sql`SELECT * FROM users WHERE email = ${email}`;
   return result.rows[0] as User || null;
 }
 
 export async function findUserById(userId: string): Promise<User | null> {
-  const result = await sql`SELECT * FROM users WHERE user_id = ${userId}`;
+  const result = await pool.sql`SELECT * FROM users WHERE user_id = ${userId}`;
   return result.rows[0] as User || null;
 }
 
 export async function createUser(user: Omit<User, 'created_at'>): Promise<User> {
-  const result = await sql`
+  const result = await pool.sql`
     INSERT INTO users (user_id, email, name, picture)
     VALUES (${user.user_id}, ${user.email}, ${user.name}, ${user.picture})
     ON CONFLICT (email) DO UPDATE SET name = ${user.name}, picture = ${user.picture}
@@ -128,14 +128,14 @@ export async function createUser(user: Omit<User, 'created_at'>): Promise<User> 
 
 // Session functions
 export async function createSession(userId: string, sessionToken: string, expiresAt: Date): Promise<void> {
-  await sql`
+  await pool.sql`
     INSERT INTO user_sessions (user_id, session_token, expires_at)
     VALUES (${userId}, ${sessionToken}, ${expiresAt.toISOString()})
   `;
 }
 
 export async function findSessionByToken(token: string): Promise<UserSession | null> {
-  const result = await sql`
+  const result = await pool.sql`
     SELECT * FROM user_sessions 
     WHERE session_token = ${token} AND expires_at > NOW()
   `;
@@ -143,26 +143,26 @@ export async function findSessionByToken(token: string): Promise<UserSession | n
 }
 
 export async function deleteSession(token: string): Promise<void> {
-  await sql`DELETE FROM user_sessions WHERE session_token = ${token}`;
+  await pool.sql`DELETE FROM user_sessions WHERE session_token = ${token}`;
 }
 
 // Project functions
 export async function getProjectsByUser(userId: string): Promise<Project[]> {
-  const result = await sql`
+  const result = await pool.sql`
     SELECT * FROM projects WHERE user_id = ${userId} ORDER BY created_at DESC
   `;
   return result.rows as Project[];
 }
 
 export async function getProjectById(projectId: string, userId: string): Promise<Project | null> {
-  const result = await sql`
+  const result = await pool.sql`
     SELECT * FROM projects WHERE project_id = ${projectId} AND user_id = ${userId}
   `;
   return result.rows[0] as Project || null;
 }
 
 export async function createProject(project: Omit<Project, 'created_at' | 'updated_at'>): Promise<Project> {
-  const result = await sql`
+  const result = await pool.sql`
     INSERT INTO projects (project_id, user_id, client_name, phone_number, project_date, status, site_address, bids)
     VALUES (
       ${project.project_id},
