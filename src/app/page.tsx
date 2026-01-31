@@ -26,7 +26,11 @@ export default function Home() {
           body: JSON.stringify({ session_id: sessionId })
         })
           .then(res => {
-            if (!res.ok) throw new Error('Auth failed');
+            if (!res.ok) {
+              return res.json().then(data => {
+                throw new Error(data.error || 'Auth failed');
+              });
+            }
             return res.json();
           })
           .then(userData => {
