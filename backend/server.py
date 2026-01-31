@@ -279,11 +279,17 @@ async def create_session(request: Request, response: Response):
     picture = auth_data.get("picture", "")
     session_token = auth_data.get("session_token", "")
     
+    # Debug logging
+    print(f"AUTH DEBUG: email='{email}', checking authorization...")
+    print(f"AUTH DEBUG: ALLOWED_EMAILS={ALLOWED_EMAILS}")
+    print(f"AUTH DEBUG: is_authorized={is_email_authorized(email)}")
+    
     # Check email authorization
     if not is_email_authorized(email):
+        print(f"AUTH DEBUG: REJECTED email '{email}'")
         raise HTTPException(
             status_code=403,
-            detail="Access denied. Your email is not authorized to use this application."
+            detail=f"Access denied. Email '{email}' is not authorized."
         )
     
     # Find or create user
