@@ -1,7 +1,7 @@
-import { neon, NeonQueryFunction } from '@neondatabase/serverless';
+import { neon } from '@neondatabase/serverless';
 
 // Lazy initialization - only connect when needed
-let sqlClient: NeonQueryFunction<boolean, boolean> | null = null;
+let sqlClient: ReturnType<typeof neon> | null = null;
 
 function getSql() {
   if (!sqlClient) {
