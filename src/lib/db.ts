@@ -1,4 +1,10 @@
-import { sql } from '@vercel/postgres';
+import { neon } from '@neondatabase/serverless';
+
+// Get connection string - prefer pooled URL
+const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL || '';
+
+// Create Neon client (works with both pooled and direct connections)
+const sql = neon(connectionString);
 
 // Types
 export interface User {
@@ -98,12 +104,12 @@ export async function initializeDatabase() {
 // User functions
 export async function findUserByEmail(email: string): Promise<User | null> {
   const result = await sql`SELECT * FROM users WHERE email = ${email}`;
-  return result.rows[0] as User || null;
+  return result[0] as User || null;
 }
 
 export async function findUserById(userId: string): Promise<User | null> {
   const result = await sql`SELECT * FROM users WHERE user_id = ${userId}`;
-  return result.rows[0] as User || null;
+  return result[0] as User || null;
 }
 
 export async function createUser(user: Omit<User, 'created_at'>): Promise<User> {
@@ -113,7 +119,7 @@ export async function createUser(user: Omit<User, 'created_at'>): Promise<User> 
     ON CONFLICT (email) DO UPDATE SET name = ${user.name}, picture = ${user.picture}
     RETURNING *
   `;
-  return result.rows[0] as User;
+  return result[0] as User;
 }
 
 // Session functions
@@ -129,7 +135,7 @@ export async function findSessionByToken(token: string): Promise<UserSession | n
     SELECT * FROM user_sessions 
     WHERE session_token = ${token} AND expires_at > NOW()
   `;
-  return result.rows[0] as UserSession || null;
+  return result[0] as UserSession || null;
 }
 
 export async function deleteSession(token: string): Promise<void> {
@@ -141,14 +147,14 @@ export async function getProjectsByUser(userId: string): Promise<Project[]> {
   const result = await sql`
     SELECT * FROM projects WHERE user_id = ${userId} ORDER BY created_at DESC
   `;
-  return result.rows as Project[];
+  return result as Project[];
 }
 
 export async function getProjectById(projectId: string, userId: string): Promise<Project | null> {
   const result = await sql`
     SELECT * FROM projects WHERE project_id = ${projectId} AND user_id = ${userId}
   `;
-  return result.rows[0] as Project || null;
+  return result[0] as Project || null;
 }
 
 export async function createProject(project: Omit<Project, 'created_at' | 'updated_at'>): Promise<Project> {
@@ -166,7 +172,7 @@ export async function createProject(project: Omit<Project, 'created_at' | 'updat
     )
     RETURNING *
   `;
-  return result.rows[0] as Project;
+  return result[0] as Project;
 }
 
 export async function updateProject(
@@ -195,12 +201,12 @@ export async function updateProject(
     RETURNING *
   `;
   
-  return result.rows[0] as Project || null;
+  return result[0] as Project || null;
 }
 
 export async function deleteProject(projectId: string, userId: string): Promise<boolean> {
   const result = await sql`
     DELETE FROM projects WHERE project_id = ${projectId} AND user_id = ${userId}
   `;
-  return (result.rowCount ?? 0) > 0;
+  return (result as any).rowCount > 0;
 }

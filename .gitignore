@@ -2,3 +2,7 @@ node_modules
 .next
 .vercel
 *.log
+-e 
+# Environment files
+*.env
+*.env.*
