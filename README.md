@@ -2,7 +2,7 @@
 
 A professional energy efficiency project estimator for Longhorn Solar, built with Next.js and Vercel Postgres.
 
-> **Version 2.5.1** - Updated Jan 31, 2026
+> **Version 2.5.2** - Test push Jan 31, 2026
 
 ## Tech Stack
 
