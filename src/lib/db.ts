@@ -184,35 +184,34 @@ export async function updateProject(
   userId: string,
   updates: Partial<Pick<Project, 'client_name' | 'phone_number' | 'status' | 'site_address' | 'bids'>>
 ): Promise<Project | null> {
-  const setClauses: string[] = ['updated_at = NOW()'];
+  // Build dynamic update
+  const project = await getProjectById(projectId, userId);
+  if (!project) return null;
   
-  if (updates.client_name !== undefined) {
-    setClauses.push(`client_name = '${updates.client_name.replace(/'/g, "''")}'`);
-  }
-  if (updates.phone_number !== undefined) {
-    setClauses.push(`phone_number = '${updates.phone_number.replace(/'/g, "''")}'`);
-  }
-  if (updates.status !== undefined) {
-    setClauses.push(`status = '${updates.status}'`);
-  }
-  if (updates.site_address !== undefined) {
-    setClauses.push(`site_address = '${JSON.stringify(updates.site_address)}'::jsonb`);
-  }
-  if (updates.bids !== undefined) {
-    setClauses.push(`bids = '${JSON.stringify(updates.bids)}'::jsonb`);
-  }
+  const newClientName = updates.client_name ?? project.client_name;
+  const newPhoneNumber = updates.phone_number ?? project.phone_number;
+  const newStatus = updates.status ?? project.status;
+  const newSiteAddress = updates.site_address ? JSON.stringify(updates.site_address) : JSON.stringify(project.site_address);
+  const newBids = updates.bids ? JSON.stringify(updates.bids) : JSON.stringify(project.bids);
 
-  const result = await sql.query(
-    `UPDATE projects SET ${setClauses.join(', ')} WHERE project_id = $1 AND user_id = $2 RETURNING *`,
-    [projectId, userId]
-  );
+  const result = await pool.sql`
+    UPDATE projects SET 
+      client_name = ${newClientName},
+      phone_number = ${newPhoneNumber},
+      status = ${newStatus},
+      site_address = ${newSiteAddress}::jsonb,
+      bids = ${newBids}::jsonb,
+      updated_at = NOW()
+    WHERE project_id = ${projectId} AND user_id = ${userId}
+    RETURNING *
+  `;
   
   return result.rows[0] as Project || null;
 }
 
 export async function deleteProject(projectId: string, userId: string): Promise<boolean> {
-  const result = await sql`
+  const result = await pool.sql`
     DELETE FROM projects WHERE project_id = ${projectId} AND user_id = ${userId}
   `;
-  return result.rowCount > 0;
+  return (result.rowCount ?? 0) > 0;
 }
