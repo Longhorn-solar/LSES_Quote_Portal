@@ -79,7 +79,10 @@ export const SERVICES_DB: Record<string, { desc: string; details: string[] }> = 
 
 export const ALLOWED_EMAILS = [
   "richard.balius@gmail.com",
-  "Richard@rbxvital.com"
+  "Richard@rbxvital.com",
+  "richard@rbxvital.com",
+  "Richard@rbvital.com",
+  "richard@rbvital.com"
 ];
 
 export const ALLOWED_DOMAINS = ["longhornsolar.com"];
