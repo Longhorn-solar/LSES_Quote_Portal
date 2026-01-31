@@ -1,23 +1,4 @@
-import { createClient, VercelClient } from '@vercel/postgres';
-
-// Lazy client initialization - only connects when first used
-let client: VercelClient | null = null;
-
-function getClient(): VercelClient {
-  if (!client) {
-    client = createClient({
-      connectionString: process.env.POSTGRES_URL
-    });
-  }
-  return client;
-}
-
-// Helper to run SQL queries
-async function sql(strings: TemplateStringsArray, ...values: any[]) {
-  const db = getClient();
-  await db.connect();
-  return db.sql(strings, ...values);
-}
+import { sql } from '@vercel/postgres';
 
 // Types
 export interface User {
@@ -69,7 +50,6 @@ export interface Project {
 // Initialize database tables
 export async function initializeDatabase() {
   try {
-    // Create users table
     await sql`
       CREATE TABLE IF NOT EXISTS users (
         user_id VARCHAR(50) PRIMARY KEY,
@@ -80,7 +60,6 @@ export async function initializeDatabase() {
       )
     `;
 
-    // Create sessions table
     await sql`
       CREATE TABLE IF NOT EXISTS user_sessions (
         id SERIAL PRIMARY KEY,
@@ -91,7 +70,6 @@ export async function initializeDatabase() {
       )
     `;
 
-    // Create projects table with JSONB for flexible data
     await sql`
       CREATE TABLE IF NOT EXISTS projects (
         project_id VARCHAR(50) PRIMARY KEY,
@@ -107,11 +85,9 @@ export async function initializeDatabase() {
       )
     `;
 
-    // Create indexes
     await sql`CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_sessions_token ON user_sessions(session_token)`;
 
-    console.log('Database initialized successfully');
     return { success: true };
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -198,7 +174,6 @@ export async function updateProject(
   userId: string,
   updates: Partial<Pick<Project, 'client_name' | 'phone_number' | 'status' | 'site_address' | 'bids'>>
 ): Promise<Project | null> {
-  // Build dynamic update
   const project = await getProjectById(projectId, userId);
   if (!project) return null;
   
