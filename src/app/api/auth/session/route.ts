@@ -4,6 +4,11 @@ import { isEmailAuthorized } from '@/lib/constants';
 import { findUserByEmail, createUser, createSession } from '@/lib/db';
 import { generateUserId } from '@/lib/auth';
 
+// GET handler to prevent infinite spinner
+export async function GET() {
+  return NextResponse.json({ session: null });
+}
+
 // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
 
 export async function POST(request: Request) {
