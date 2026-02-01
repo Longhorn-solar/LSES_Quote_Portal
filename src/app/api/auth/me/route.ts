@@ -6,12 +6,12 @@ export async function GET() {
     const user = await getCurrentUser();
     
     if (!user) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+      return NextResponse.json({ user: null });
     }
     
     return NextResponse.json(user);
   } catch (error) {
     console.error('Auth me error:', error);
-    return NextResponse.json({ error: 'Authentication failed' }, { status: 500 });
+    return NextResponse.json({ user: null });
   }
 }
