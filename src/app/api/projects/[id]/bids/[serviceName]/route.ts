@@ -4,21 +4,22 @@ import { getProjectById, updateProject } from '@/lib/db';
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string; serviceName: string } }
+  { params }: { params: Promise<{ id: string; serviceName: string }> }
 ) {
   try {
+    const { id, serviceName: encodedServiceName } = await params;
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
     
-    const project = await getProjectById(params.id, user.user_id);
+    const project = await getProjectById(id, user.user_id);
     if (!project) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
     
     const body = await request.json();
-    const serviceName = decodeURIComponent(params.serviceName);
+    const serviceName = decodeURIComponent(encodedServiceName);
     
     // Update the specific bid
     const bids = project.bids || {};
@@ -28,7 +29,7 @@ export async function PUT(
       serviceName
     };
     
-    await updateProject(params.id, user.user_id, { bids });
+    await updateProject(id, user.user_id, { bids });
     
     return NextResponse.json({ message: 'Bid updated successfully' });
   } catch (error) {

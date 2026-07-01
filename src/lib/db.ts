@@ -1,16 +1,17 @@
-import { createClient } from '@vercel/postgres';
+import { neon } from '@neondatabase/serverless';
 
-// Lazy client initialization
-let client: ReturnType<typeof createClient> | null = null;
+// Lazy SQL client initialization
+let sqlClient: ReturnType<typeof neon> | null = null;
 
-async function getClient() {
-  if (!client) {
-    client = createClient({ 
-      connectionString: process.env.POSTGRES_URL 
-    });
-    await client.connect();
+function getSql() {
+  if (!sqlClient) {
+    const connectionString = process.env.POSTGRES_URL;
+    if (!connectionString) {
+      throw new Error('POSTGRES_URL environment variable is not set');
+    }
+    sqlClient = neon(connectionString);
   }
-  return client;
+  return sqlClient;
 }
 
 // Types
@@ -63,9 +64,9 @@ export interface Project {
 // Initialize database tables
 export async function initializeDatabase() {
   try {
-    const db = await getClient();
+    const sql = getSql();
     
-    await db.sql`
+    await sql`
       CREATE TABLE IF NOT EXISTS users (
         user_id VARCHAR(50) PRIMARY KEY,
         email VARCHAR(255) UNIQUE NOT NULL,
@@ -75,7 +76,7 @@ export async function initializeDatabase() {
       )
     `;
 
-    await db.sql`
+    await sql`
       CREATE TABLE IF NOT EXISTS user_sessions (
         id SERIAL PRIMARY KEY,
         user_id VARCHAR(50) REFERENCES users(user_id),
@@ -85,7 +86,7 @@ export async function initializeDatabase() {
       )
     `;
 
-    await db.sql`
+    await sql`
       CREATE TABLE IF NOT EXISTS projects (
         project_id VARCHAR(50) PRIMARY KEY,
         user_id VARCHAR(50) REFERENCES users(user_id),
@@ -100,8 +101,8 @@ export async function initializeDatabase() {
       )
     `;
 
-    await db.sql`CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id)`;
-    await db.sql`CREATE INDEX IF NOT EXISTS idx_sessions_token ON user_sessions(session_token)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_sessions_token ON user_sessions(session_token)`;
 
     return { success: true };
   } catch (error) {
@@ -112,70 +113,70 @@ export async function initializeDatabase() {
 
 // User functions
 export async function findUserByEmail(email: string): Promise<User | null> {
-  const db = await getClient();
-  const result = await db.sql`SELECT * FROM users WHERE email = ${email}`;
-  return result.rows[0] as User || null;
+  const sql = getSql();
+  const result = await sql`SELECT * FROM users WHERE email = ${email}` as Record<string, unknown>[];
+  return result[0] as unknown as User || null;
 }
 
 export async function findUserById(userId: string): Promise<User | null> {
-  const db = await getClient();
-  const result = await db.sql`SELECT * FROM users WHERE user_id = ${userId}`;
-  return result.rows[0] as User || null;
+  const sql = getSql();
+  const result = await sql`SELECT * FROM users WHERE user_id = ${userId}` as Record<string, unknown>[];
+  return result[0] as unknown as User || null;
 }
 
 export async function createUser(user: Omit<User, 'created_at'>): Promise<User> {
-  const db = await getClient();
-  const result = await db.sql`
+  const sql = getSql();
+  const result = await sql`
     INSERT INTO users (user_id, email, name, picture)
     VALUES (${user.user_id}, ${user.email}, ${user.name}, ${user.picture})
     ON CONFLICT (email) DO UPDATE SET name = ${user.name}, picture = ${user.picture}
     RETURNING *
-  `;
-  return result.rows[0] as User;
+  ` as Record<string, unknown>[];
+  return result[0] as unknown as User;
 }
 
 // Session functions
 export async function createSession(userId: string, sessionToken: string, expiresAt: Date): Promise<void> {
-  const db = await getClient();
-  await db.sql`
+  const sql = getSql();
+  await sql`
     INSERT INTO user_sessions (user_id, session_token, expires_at)
     VALUES (${userId}, ${sessionToken}, ${expiresAt.toISOString()})
   `;
 }
 
 export async function findSessionByToken(token: string): Promise<UserSession | null> {
-  const db = await getClient();
-  const result = await db.sql`
+  const sql = getSql();
+  const result = await sql`
     SELECT * FROM user_sessions WHERE session_token = ${token} AND expires_at > NOW()
-  `;
-  return result.rows[0] as UserSession || null;
+  ` as Record<string, unknown>[];
+  return result[0] as unknown as UserSession || null;
 }
 
 export async function deleteSession(token: string): Promise<void> {
-  const db = await getClient();
-  await db.sql`DELETE FROM user_sessions WHERE session_token = ${token}`;
+  const sql = getSql();
+  await sql`DELETE FROM user_sessions WHERE session_token = ${token}`;
 }
 
 // Project functions
 export async function getProjectsByUser(userId: string): Promise<Project[]> {
-  const db = await getClient();
-  const result = await db.sql`
+  const sql = getSql();
+  const result = await sql`
     SELECT * FROM projects WHERE user_id = ${userId} ORDER BY created_at DESC
-  `;
-  return result.rows as Project[];
+  ` as Record<string, unknown>[];
+  return result as unknown as Project[];
 }
 
 export async function getProjectById(projectId: string, userId: string): Promise<Project | null> {
-  const db = await getClient();
-  const result = await db.sql`
+  const sql = getSql();
+  const result = await sql`
     SELECT * FROM projects WHERE project_id = ${projectId} AND user_id = ${userId}
-  `;
-  return result.rows[0] as Project || null;
+  ` as Record<string, unknown>[];
+  return result[0] as unknown as Project || null;
 }
 
 export async function createProject(project: Omit<Project, 'created_at' | 'updated_at'>): Promise<Project> {
-  const db = await getClient();
-  const result = await db.sql`
+  const sql = getSql();
+  const result = await sql`
     INSERT INTO projects (project_id, user_id, client_name, phone_number, project_date, status, site_address, bids)
     VALUES (
       ${project.project_id},
@@ -188,8 +189,8 @@ export async function createProject(project: Omit<Project, 'created_at' | 'updat
       ${JSON.stringify(project.bids)}
     )
     RETURNING *
-  `;
-  return result.rows[0] as Project;
+  ` as Record<string, unknown>[];
+  return result[0] as unknown as Project;
 }
 
 export async function updateProject(
@@ -197,7 +198,7 @@ export async function updateProject(
   userId: string,
   updates: Partial<Pick<Project, 'client_name' | 'phone_number' | 'status' | 'site_address' | 'bids'>>
 ): Promise<Project | null> {
-  const db = await getClient();
+  const sql = getSql();
   const project = await getProjectById(projectId, userId);
   if (!project) return null;
   
@@ -207,7 +208,7 @@ export async function updateProject(
   const newSiteAddress = updates.site_address ? JSON.stringify(updates.site_address) : JSON.stringify(project.site_address);
   const newBids = updates.bids ? JSON.stringify(updates.bids) : JSON.stringify(project.bids);
 
-  const result = await db.sql`
+  const result = await sql`
     UPDATE projects SET 
       client_name = ${newClientName},
       phone_number = ${newPhoneNumber},
@@ -217,15 +218,15 @@ export async function updateProject(
       updated_at = NOW()
     WHERE project_id = ${projectId} AND user_id = ${userId}
     RETURNING *
-  `;
+  ` as Record<string, unknown>[];
   
-  return result.rows[0] as Project || null;
+  return result[0] as unknown as Project || null;
 }
 
 export async function deleteProject(projectId: string, userId: string): Promise<boolean> {
-  const db = await getClient();
-  const result = await db.sql`
-    DELETE FROM projects WHERE project_id = ${projectId} AND user_id = ${userId}
-  `;
-  return (result.rowCount ?? 0) > 0;
+  const sql = getSql();
+  const result = await sql`
+    DELETE FROM projects WHERE project_id = ${projectId} AND user_id = ${userId} RETURNING project_id
+  ` as Record<string, unknown>[];
+  return result.length > 0;
 }

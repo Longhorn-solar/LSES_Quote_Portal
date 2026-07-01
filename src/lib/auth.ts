@@ -4,7 +4,7 @@ import type { User } from './db';
 
 export async function getCurrentUser(): Promise<User | null> {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const sessionToken = cookieStore.get('session_token')?.value;
     
     if (!sessionToken) {

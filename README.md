@@ -1,15 +1,15 @@
 # Longhorn Solar - Energy Efficiency Estimator
 
-A professional energy efficiency project estimator for Longhorn Solar, built with Next.js and Vercel Postgres.
+A professional energy efficiency project estimator for Longhorn Solar, built with Next.js and Neon Postgres on Vercel.
 
 > **Version 2.5.2** - Test push Jan 31, 2026
 
 ## Tech Stack
 
-- **Framework**: Next.js 14 (App Router)
-- **Database**: Vercel Postgres
+- **Framework**: Next.js 16 (App Router)
+- **Database**: Neon Postgres (Vercel Storage integration)
 - **Auth**: Emergent Google OAuth
-- **AI**: Emergent LLM Key (Gemini)
+- **AI**: Placeholder mode (disabled, future provider-ready)
 - **Styling**: Tailwind CSS
 
 ## Vercel Deployment Setup
@@ -21,9 +21,9 @@ Push this repository to GitHub.
 - Go to [vercel.com](https://vercel.com)
 - Click "New Project" and import your GitHub repo
 
-### 3. Create Vercel Postgres Database
+### 3. Create Neon Postgres Database
 - In your Vercel project, go to **Storage** tab
-- Click **Create Database** → **Postgres**
+- Click **Create Database** → **Neon** (Postgres)
 - Name it `longhorn-solar-db`
 - Vercel will auto-populate the environment variables
 
@@ -31,10 +31,13 @@ Push this repository to GitHub.
 In Vercel project settings → Environment Variables, add:
 
 ```
-EMERGENT_LLM_KEY=sk-emergent-cC12c4014A4A880B25
+FUTURE_AI_PROVIDER_KEY=your_future_provider_key
 ```
 
-(The Postgres variables are added automatically when you create the database)
+The app currently runs AI recommendations in placeholder mode and does not use this key yet.
+Keep `FUTURE_AI_PROVIDER_KEY` as documentation for future implementation.
+
+(The Postgres variables, including `POSTGRES_URL`, are added automatically when you create the database)
 
 ### 5. Initialize Database Tables
 After first deployment, call this endpoint once to create tables:
@@ -64,7 +67,7 @@ yarn install
 yarn dev
 ```
 
-For local development, the app uses mock database by default. To use real Vercel Postgres locally:
+For local development, the app uses mock database by default. To use real Neon Postgres locally:
 1. Install Vercel CLI: `npm i -g vercel`
 2. Link project: `vercel link`
 3. Pull env vars: `vercel env pull .env.local`
@@ -75,9 +78,9 @@ For local development, the app uses mock database by default. To use real Vercel
 - ✅ Google Auth with email whitelist
 - ✅ Projects Dashboard with search/filter
 - ✅ 19 energy services configuration
-- ✅ AI-powered recommendations
+- ✅ AI placeholder (future provider integration)
 - ✅ NetSuite CSV export
-- ✅ Vercel Postgres persistence
+- ✅ Neon Postgres persistence
 
 ## TODO
 

@@ -4,15 +4,16 @@ import { getProjectById, updateProject, deleteProject } from '@/lib/db';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
     
-    const project = await getProjectById(params.id, user.user_id);
+    const project = await getProjectById(id, user.user_id);
     if (!project) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
@@ -26,9 +27,10 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -43,7 +45,7 @@ export async function PUT(
     if (body.siteAddress !== undefined) updates.site_address = body.siteAddress;
     if (body.bids !== undefined) updates.bids = body.bids;
     
-    const project = await updateProject(params.id, user.user_id, updates);
+    const project = await updateProject(id, user.user_id, updates);
     if (!project) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
@@ -57,15 +59,16 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
     
-    const deleted = await deleteProject(params.id, user.user_id);
+    const deleted = await deleteProject(id, user.user_id);
     if (!deleted) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }

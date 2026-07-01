@@ -407,7 +407,6 @@ function SummaryView({ project, updateBid }: any) {
 // Detail View
 function DetailView({ project, updateBid }: any) {
   const [selectedService, setSelectedService] = useState(Object.keys(SERVICES_DB)[0]);
-  const [isAiLoading, setIsAiLoading] = useState(false);
 
   const bid = project.bids?.[selectedService] || { selected: false, estCost: 0, details: {}, notes: '', aiRecommendations: '' };
   const info = SERVICES_DB[selectedService];
@@ -415,27 +414,10 @@ function DetailView({ project, updateBid }: any) {
   const subtotal = selectedBids.reduce((sum, b) => sum + b.estCost, 0);
 
   const handleAiClick = async () => {
-    if (!bid.notes?.trim()) {
-      alert('Please enter some site conditions or notes first.');
-      return;
-    }
-    setIsAiLoading(true);
-    try {
-      const res = await fetch('/api/ai/recommendations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          serviceName: selectedService,
-          notes: bid.notes,
-          otherSelectedServices: selectedBids.map(b => b.serviceName)
-        })
-      });
-      const data = await res.json();
-      updateBid(selectedService, { aiRecommendations: data.recommendations });
-    } catch (err) {
-      alert('Failed to generate recommendations.');
-    }
-    setIsAiLoading(false);
+    updateBid(selectedService, {
+      aiRecommendations:
+        'AI recommendations are currently disabled. Placeholder mode is active and ready for a future provider integration.'
+    });
   };
 
   return (
@@ -516,16 +498,9 @@ function DetailView({ project, updateBid }: any) {
             />
             <button
               onClick={handleAiClick}
-              disabled={isAiLoading}
-              className={`w-full py-4 rounded-xl font-bold text-lg text-white flex items-center justify-center gap-3 shadow-lg ${
-                isAiLoading ? 'bg-slate-400' : 'bg-gradient-to-r from-[#0062ab] to-[#004a82] hover:opacity-95'
-              }`}
+              className="w-full py-4 rounded-xl font-bold text-lg text-white flex items-center justify-center gap-3 shadow-lg bg-gradient-to-r from-[#0062ab] to-[#004a82] hover:opacity-95"
             >
-              {isAiLoading ? (
-                <><div className="h-6 w-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Consulting AI...</>
-              ) : (
-                <><i className="fa-solid fa-wand-magic-sparkles"></i> Generate Recommendations</>
-              )}
+              <><i className="fa-solid fa-wand-magic-sparkles"></i> AI Placeholder (Coming Soon)</>
             </button>
           </div>
 
