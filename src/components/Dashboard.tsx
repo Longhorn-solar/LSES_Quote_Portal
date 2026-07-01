@@ -82,20 +82,24 @@ function MetaModal({ isOpen, onClose, onSave, initialData, title }: any) {
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      clientName: formData.clientName,
-      phoneNumber: formData.phoneNumber,
-      siteAddress: {
-        address1: formData.address1,
-        address2: formData.address2,
-        city: formData.city,
-        state: formData.state,
-        zip: formData.zip,
-      }
-    });
-    onClose();
+    try {
+      await onSave({
+        clientName: formData.clientName,
+        phoneNumber: formData.phoneNumber,
+        siteAddress: {
+          address1: formData.address1,
+          address2: formData.address2,
+          city: formData.city,
+          state: formData.state,
+          zip: formData.zip,
+        }
+      });
+      onClose();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to save project.');
+    }
   };
 
   return (
@@ -615,7 +619,21 @@ export default function Dashboard({ user, setUser }: { user: User; setUser: (u: 
 
   const updateBid = async (serviceName: string, updates: Partial<BidItem>) => {
     if (!activeProjectId || !activeProject) return;
-    const newBids = { ...activeProject.bids, [serviceName]: { ...activeProject.bids[serviceName], ...updates } };
+
+    const existingBid = activeProject.bids?.[serviceName] || {
+      serviceName,
+      selected: false,
+      estCost: 0,
+      details: {},
+      notes: '',
+      aiRecommendations: ''
+    };
+
+    const newBids = {
+      ...(activeProject.bids || {}),
+      [serviceName]: { ...existingBid, ...updates }
+    };
+
     setProjects(prev => prev.map(p => p.project_id === activeProjectId ? { ...p, bids: newBids } : p));
     await fetch(`/api/projects/${activeProjectId}/bids/${encodeURIComponent(serviceName)}`, {
       method: 'PUT',
@@ -640,6 +658,12 @@ export default function Dashboard({ user, setUser }: { user: User; setUser: (u: 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
+
+    if (!res.ok) {
+      const errorBody = await res.json().catch(() => ({}));
+      throw new Error(errorBody?.error || 'Failed to create project');
+    }
+
     const newProject = await res.json();
     setProjects(prev => [...prev, newProject]);
     setActiveProjectId(newProject.project_id);

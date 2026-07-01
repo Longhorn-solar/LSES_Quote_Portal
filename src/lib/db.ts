@@ -2,6 +2,7 @@ import { neon } from '@neondatabase/serverless';
 
 // Lazy SQL client initialization
 let sqlClient: ReturnType<typeof neon> | null = null;
+let dbReadyPromise: Promise<void> | null = null;
 
 function getSql() {
   if (!sqlClient) {
@@ -61,6 +62,19 @@ export interface Project {
   updated_at: Date;
 }
 
+async function ensureDatabaseReady(): Promise<void> {
+  if (!dbReadyPromise) {
+    dbReadyPromise = (async () => {
+      const result = await initializeDatabase();
+      if (!result.success) {
+        throw new Error(result.error || 'Database initialization failed');
+      }
+    })();
+  }
+
+  await dbReadyPromise;
+}
+
 // Initialize database tables
 export async function initializeDatabase() {
   try {
@@ -104,27 +118,30 @@ export async function initializeDatabase() {
     await sql`CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_sessions_token ON user_sessions(session_token)`;
 
-    return { success: true };
+    return { success: true as const };
   } catch (error) {
     console.error('Database initialization error:', error);
-    return { success: false, error: String(error) };
+    return { success: false as const, error: String(error) };
   }
 }
 
 // User functions
 export async function findUserByEmail(email: string): Promise<User | null> {
+  await ensureDatabaseReady();
   const sql = getSql();
   const result = await sql`SELECT * FROM users WHERE email = ${email}` as Record<string, unknown>[];
   return result[0] as unknown as User || null;
 }
 
 export async function findUserById(userId: string): Promise<User | null> {
+  await ensureDatabaseReady();
   const sql = getSql();
   const result = await sql`SELECT * FROM users WHERE user_id = ${userId}` as Record<string, unknown>[];
   return result[0] as unknown as User || null;
 }
 
 export async function createUser(user: Omit<User, 'created_at'>): Promise<User> {
+  await ensureDatabaseReady();
   const sql = getSql();
   const result = await sql`
     INSERT INTO users (user_id, email, name, picture)
@@ -137,6 +154,7 @@ export async function createUser(user: Omit<User, 'created_at'>): Promise<User> 
 
 // Session functions
 export async function createSession(userId: string, sessionToken: string, expiresAt: Date): Promise<void> {
+  await ensureDatabaseReady();
   const sql = getSql();
   await sql`
     INSERT INTO user_sessions (user_id, session_token, expires_at)
@@ -145,6 +163,7 @@ export async function createSession(userId: string, sessionToken: string, expire
 }
 
 export async function findSessionByToken(token: string): Promise<UserSession | null> {
+  await ensureDatabaseReady();
   const sql = getSql();
   const result = await sql`
     SELECT * FROM user_sessions WHERE session_token = ${token} AND expires_at > NOW()
@@ -153,12 +172,14 @@ export async function findSessionByToken(token: string): Promise<UserSession | n
 }
 
 export async function deleteSession(token: string): Promise<void> {
+  await ensureDatabaseReady();
   const sql = getSql();
   await sql`DELETE FROM user_sessions WHERE session_token = ${token}`;
 }
 
 // Project functions
 export async function getProjectsByUser(userId: string): Promise<Project[]> {
+  await ensureDatabaseReady();
   const sql = getSql();
   const result = await sql`
     SELECT * FROM projects WHERE user_id = ${userId} ORDER BY created_at DESC
@@ -167,6 +188,7 @@ export async function getProjectsByUser(userId: string): Promise<Project[]> {
 }
 
 export async function getProjectById(projectId: string, userId: string): Promise<Project | null> {
+  await ensureDatabaseReady();
   const sql = getSql();
   const result = await sql`
     SELECT * FROM projects WHERE project_id = ${projectId} AND user_id = ${userId}
@@ -175,6 +197,7 @@ export async function getProjectById(projectId: string, userId: string): Promise
 }
 
 export async function createProject(project: Omit<Project, 'created_at' | 'updated_at'>): Promise<Project> {
+  await ensureDatabaseReady();
   const sql = getSql();
   const result = await sql`
     INSERT INTO projects (project_id, user_id, client_name, phone_number, project_date, status, site_address, bids)
@@ -198,6 +221,7 @@ export async function updateProject(
   userId: string,
   updates: Partial<Pick<Project, 'client_name' | 'phone_number' | 'status' | 'site_address' | 'bids'>>
 ): Promise<Project | null> {
+  await ensureDatabaseReady();
   const sql = getSql();
   const project = await getProjectById(projectId, userId);
   if (!project) return null;
@@ -224,6 +248,7 @@ export async function updateProject(
 }
 
 export async function deleteProject(projectId: string, userId: string): Promise<boolean> {
+  await ensureDatabaseReady();
   const sql = getSql();
   const result = await sql`
     DELETE FROM projects WHERE project_id = ${projectId} AND user_id = ${userId} RETURNING project_id

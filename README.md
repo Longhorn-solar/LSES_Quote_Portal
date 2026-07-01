@@ -40,7 +40,9 @@ Keep `FUTURE_AI_PROVIDER_KEY` as documentation for future implementation.
 (The Postgres variables, including `POSTGRES_URL`, are added automatically when you create the database)
 
 ### 5. Initialize Database Tables
-After first deployment, call this endpoint once to create tables:
+Database tables are now auto-created on first authenticated API use.
+
+If you want to force setup manually, you can still call:
 ```
 POST https://your-app.vercel.app/api/db/setup
 ```
