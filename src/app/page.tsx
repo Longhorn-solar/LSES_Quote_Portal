@@ -57,7 +57,13 @@ export default function Home() {
         if (!res.ok) throw new Error('Not authenticated');
         return res.json();
       })
-      .then(userData => setUser(userData))
+      .then(userData => {
+        const normalizedUser = userData?.user ?? userData;
+        if (!normalizedUser?.user_id) {
+          throw new Error('Not authenticated');
+        }
+        setUser(normalizedUser);
+      })
       .catch(() => setUser(null))
       .finally(() => setIsLoading(false));
   }, []);
